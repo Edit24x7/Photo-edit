@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>All-in-One Media Tools</title>
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+
+<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<style>
+/* Consolidated CSS from your PDF Editor */
+:root{--bg1:#f4f8fb;--accent1:#4f8ef7;--accent2:#7b61ff;--accent3:#2ecc71;--card:#ffffff;--muted:#6b7280;}
+*{box-sizing:border-box}
+
+/* --- Colorful Body Background --- */
+body{
+    margin:0;
+    font-family:Inter, "Segoe UI", Roboto, Arial;
+    background: linear-gradient(135deg, #f5f7ff 0%, #e8edff 100%);
+    background-attachment: fixed;
+    color:#111;
+}
+
+/* --- Professional Header --- */
+header{
+    background: linear-gradient(120deg, var(--accent2) 0%, var(--accent1) 100%);
+    color:white;
+    padding: 22px 20px;
+    text-align:center;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.container{max-width:1100px;margin:24px auto;padding:16px;}
+.subtitle{color:var(--muted); text-align:center; margin:8px 0 24px;}
+.grid{display:flex;flex-wrap:wrap;gap:18px; justify-content:center;}
+
+.card{
+    background:var(--card);
+    width:220px;
+    height:220px; /* Square */
+    border-radius:12px;
+    padding:18px;
+    box-shadow: 0 10px 30px rgba(64, 87, 133, 0.1);
+    cursor:pointer;
+    text-align:left;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+}
+.card:hover{
+    transform:translateY(-6px);
+    box-shadow: 0 12px 35px rgba(64, 87, 133, 0.15);
+}
+.card .ico{font-size:30px;margin-bottom:8px}
+
+.tools-bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0;}
+.btn{background:var(--accent1);color:white;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;
+ min-width:120px;}
+.btn.secondary{background:#fff;border:1px solid #e6e9ef;color:#111}
+.btn.red{background:#ef4444}
+
+.section{
+    display:none;
+    padding: 24px;
+    margin-top:12px;
+    background:#fff;
+    border-radius:12px;
+    box-shadow: 0 10px 30px rgba(64, 87, 133, 0.1);
+}
+.active{display:block}
+
+.section h3 {
+    font-size: 22px;
+    color: #333;
+    padding-bottom: 10px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    border-bottom: 3px solid var(--accent1);
+}
+
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
+input[type="file"]{display:inline-block}
+label{font-weight:600;color:#111; margin-right: 5px;} /* Added margin */
+iframe{width:100%;height:70vh;border:1px solid #e6e9ef;border-radius:8px;margin-top:12px}
+.thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.thumb{width:120px;border-radius:8px;padding:6px;background:#fff;border:1px solid #e6e9ef; text-align:center}
+.thumb canvas{width:100%;height:auto;border-radius:4px}
+/* Updated input styles */
+.input-inline{padding:8px;border-radius:8px;border:1px solid #e6e9ef; width: 100px; margin-right: 15px;}
+.select-inline{padding:8px;border-radius:8px;border:1px solid #e6e9ef; background: #fff; margin-right: 15px;}
+.form-row{display:flex;gap:8px;align-items:center;margin:12px 0; flex-wrap: wrap;}
+.small{font-size:13px;color:var(--muted)}
+
+footer{
+    margin-top: 30px;
+    padding: 30px 20px;
+    text-align:center;
+    color: rgba(255,255,255,0.8);
+    font-size:14px;
+    background: linear-gradient(120deg, var(--accent2) 0%, var(--accent1) 100%);
+}
+@media(max-width:720px){ .card{width:100%; height: auto;} .thumb{width:40%} }
+
+/* --- Styles for Photo Editor --- */
+#canvas-wrapper {
+    text-align: center; 
+    margin-top: 20px; 
+    background:#f4f8fb;
+    border:1px solid #e6e9ef; 
+    padding: 10px; 
+    border-radius: 8px;
+    position: relative; /* Needed for crop box */
+}
+#image-canvas {
+    max-width: 100%;
+    border: 2px dashed #b0b8c0;
+    background-color: #ffffff;
+}
+.btn .material-icons-sharp, .btn.secondary .material-icons-sharp {
+    font-size: 16px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+#resizePreviewWrap img {
+    max-width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 10px;
+    background-color: #fff;
+}
+#wmCanvas {
+    max-width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 10px;
+    background-color: #fff;
+    cursor: default; 
+}
+</style>
+</head>
+<body>
+
+<header>Professional Photo & Media Tools</header>
+
+<div class="container">
+
+    <div id="home" class="section active">
+      <p class="subtitle">All processing happens locally in your browser — nothing is uploaded.</p>
+      
+      <div class="grid">
+        <div class="card" onclick="openSection('photoEditorSection')">
+            <div>
+                <div class="ico">🖼️</div>
+                <strong>Edit Pic</strong>
+            </div>
+            <div class="small">Transform, Rotate, Flip, Crop</div>
+        </div>
+        
+        <div class="card" onclick="openSection('resizeSection')">
+            <div>
+                <div class="ico">📏</div>
+                <strong>Resize Image</strong>
+            </div>
+            <div class="small">Change image dimensions</div>
+        </div>
+        
+        <div class="card" onclick="openSection('watermarkSection')">
+            <div>
+                <div class="ico">✍️</div>
+                <strong>Watermark Image</strong>
+            </div>
+            <div class="small">Add movable, rotated text</div>
+        </div>
+
+        <div class="card" onclick="openSection('img2pdfSection')">
+            <div>
+                <div class="ico">📄</div>
+                <strong>Image → PDF</strong>
+            </div>
+            <div class="small">Combine images into a PDF</div>
+        </div>
+        
+        <div class="card" onclick="openSection('pdf2imgSection')">
+            <div>
+                <div class="ico">🖼️</div>
+                <strong>PDF → Image</strong>
+            </div>
+            <div class="small">Extract pages from a PDF</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tools-bar" style="justify-content:flex-start;margin-top:18px">
+      <button id="backHomeBtn" class="btn secondary" style="display:none" onclick="goHome()">← Back to Home</button>
+    </div>
+
+
+    <div id="photoEditorSection" class="section">
+      <h3>Photo Editor</h3>
+      
+      <div class="row">
+        <label for="image-loader">1. Open Image:</label>
+        <input id="image-loader" type="file" accept="image/*">
+      </div>
+
+      <div class="form-row">
+        <label>2. Transform:</label>
+        <button class="btn secondary" id="btn-rotate">
+            <span class="material-icons-sharp">rotate_90_degrees_cw</span>
+            Rotate 90°
+        </button>
+        <button class="btn secondary" id="btn-flip-h">
+            <span class="material-icons-sharp">flip</span>
+            Flip Horizontal
+        </button>
+        <button class="btn secondary" id="btn-flip-v">
+            <span class="material-icons-sharp">flip_camera_vertical</span>
+            Flip Vertical
+        </button>
+      </div>
+      
+      <div class="form-row">
+        <label>3. Crop:</label>
+        <button class="btn secondary" id="btn-crop-start">
+            <span class="material-icons-sharp">crop</span>
+            Start Crop
+        </button>
+        <button class="btn" id="btn-crop-apply">
+            <span class="material-icons-sharp">done</span>
+            Apply Crop
+        </button>
+      </div>
+
+      <div id="canvas-wrapper">
+        <canvas id="image-canvas"></canvas>
+      </div>
+      
+      <div class="row" style="margin-top: 20px;">
+        <button class="btn" id="btn-save">
+            <span class="material-icons-sharp">download</span>
+            Download Edited Image
+        </button>
+      </div>
+
+    </div>
+
+    <div id="resizeSection" class="section">
+      <h3>Resize Image</h3>
+      <div class="row">
+        <label for="resizeFile">1. Open Image:</label>
+        <input id="resizeFile" type="file" accept="image/*">
+      </div>
+      <div class="form-row">
+        <label>2. Enter New Dimensions:</label>
+        <input id="resizeWidthNew" class="input-inline" type="number" placeholder="Width">
+        <input id="resizeHeightNew" class="input-inline" type="number" placeholder="Height">
+      </div>
+      <div class="row" style="margin-top: 20px;">
+        <button class="btn secondary" id="btnResizePreview">
+            <span class="material-icons-sharp">visibility</span>
+            Preview Resize
+        </button>
+        <button class="btn" id="btnResizeDownload" style="display: none;">
+            <span class="material-icons-sharp">download</span>
+            Download
+        </button>
+      </div>
+      <div id="resizePreviewWrap" style="margin-top: 15px;">
+        <div class="small">Image preview will appear here.</div>
+      </div>
+    </div>
+
+    <div id="watermarkSection" class="section">
+      <h3>Watermark Image</h3>
+      <div class="row">
+        <label for="wmFile">1. Open Image:</label>
+        <input id="wmFile" type="file" accept="image/*">
+      </div>
+      <div class="form-row">
+        <label>2. Text:</label>
+        <input id="wm-text-input" class="input-inline" type="text" placeholder="Your Watermark" style="width: 200px;">
+      </div>
+      <div class="form-row">
+          <label>Font:</label>
+          <select id="wm-font-family" class="select-inline" style="width: 150px;">
+              <option value="Inter">Inter</option>
+              <option value="Arial">Arial</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Impact">Impact</option>
+              <option value="Courier New">Courier New</option>
+          </select>
+          <label>Style:</label>
+          <select id="wm-font-style" class="select-inline" style="width: 120px;">
+              <option value="normal">Normal</option>
+              <option value="bold">Bold</option>
+              <option value="italic">Italic</option>
+              <option value="bold italic">Bold Italic</option>
+          </select>
+      </div>
+      <div class="form-row">
+          <label>Size:</label>
+          <input id="wm-text-size" class="input-inline" type="number" value="50" placeholder="Size" title="Text Size">
+          <label>Color:</label>
+          <input id="wm-text-color" class="input-inline" type="color" value="#FFFFFF" title="Text Color" style="width: 50px; padding: 4px; height: 38px;">
+      </div>
+      <div class="form-row">
+        <label>Opacity:</label>
+        <input id="wm-text-opacity" class="input-inline" type="range" min="0.1" max="1" step="0.1" value="0.5" style="width: 150px; padding: 0;">
+        <label>Rotation:</label>
+        <input id="wm-rotate" class="input-inline" type="number" value="-45" placeholder="Angle" title="Rotation Angle">
+      </div>
+      
+      <div class="row" style="margin-top: 20px;">
+        <button class="btn" id="btnWatermarkDownload">
+            <span class="material-icons-sharp">download</span>
+            Download Watermarked Image
+        </button>
+      </div>
+      <div class="small">Type your text, then click and drag it on the preview image below to move it.</div>
+      <div id="wmCanvasWrap" style="margin-top: 15px;">
+          <canvas id="wmCanvas"></canvas>
+      </div>
+    </div>
+
+
+    <div id="img2pdfSection" class="section">
+      <h3>Image → PDF</h3>
+      <div class="row">
+        <input id="imgFiles" type="file" accept="image/*" multiple>
+        <button class="btn" onclick="imagesToPdf()">Convert & View</button>
+        <button class="btn secondary" onclick="downloadLastResult()">Download Result (PDF)</button>
+      </div>
+      <div class="small">Select one or more images. They will be added to the PDF in order.</div>
+      <div id="imgViewerWrap"></div>
+    </div>
+
+    <div id="pdf2imgSection" class="section">
+      <h3>PDF → Image</h3>
+      <div class="row">
+        <input id="pdfFile" type="file" accept="application/pdf">
+        <button class="btn" onclick="pdfToImages()">Convert to Images</button>
+      </div>
+      <div class="small">Converts each page of the PDF into a separate image and downloads them in a .zip file.</div>
+      <div id="pdfThumbContainer" class="thumbs"></div>
+      <div id="pdfDownloadWrapper" class="row" style="margin-top: 20px;"></div>
+    </div>
+    
+</div> <footer>
+  &copy; 2025 Professional Photo & Media Tools. All processing is 100% offline in your browser.
+</footer>
+
+
+<script>
+    // --- 0. Setup PDF.js Worker ---
+    let pdfjsLib; // Global var for PDF.js
+    window.addEventListener('load', () => {
+        if (window.pdfjsLib) {
+            pdfjsLib = window.pdfjsLib;
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+        } else {
+            console.error("PDF.js library failed to load.");
+        }
+    });
+    
+    // --- Global variable for downloading results ---
+    let lastResultBlob = null; 
+    let lastResultURL = null; 
+
+    // --- 1. UI Navigation Functions ---
+
+    function openSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.getElementById('backHomeBtn').style.display = 'inline-block';
+        
+        lastResultBlob = null;
+        if (lastResultURL) {
+            URL.revokeObjectURL(lastResultURL);
+            lastResultURL = null;
+        }
+        // Clear all preview containers
+        document.getElementById('imgViewerWrap').innerHTML = '';
+        document.getElementById('pdfThumbContainer').innerHTML = '';
+        document.getElementById('pdfDownloadWrapper').innerHTML = '';
+        
+        // Clear watermark canvas
+        const wmCanvas = document.getElementById('wmCanvas');
+        if(wmCanvas) {
+            const wmCtx = wmCanvas.getContext('2d');
+            wmCtx.clearRect(0,0,wmCanvas.width, wmCanvas.height);
+            wmImage = new Image();
+            // Reset text object to new defaults
+            wmText = {
+                text: "WATERMARK",
+                color: "#FFFFFF",
+                size: 50,
+                opacity: 0.5,
+                rotation: -45,
+                x: 0,
+                y: 0,
+                font: "Inter", // NEW
+                style: "normal" // NEW
+            };
+            // Reset input fields to default
+            document.getElementById('wm-text-input').value = 'WATERMARK';
+            document.getElementById('wm-font-family').value = 'Inter'; // NEW
+            document.getElementById('wm-font-style').value = 'normal'; // NEW
+            document.getElementById('wm-text-size').value = 50;
+            document.getElementById('wm-text-color').value = '#FFFFFF';
+            document.getElementById('wm-text-opacity').value = 0.5;
+            document.getElementById('wm-rotate').value = -45;
+        }
+        // Clear resize tool
+        const resizePreview = document.getElementById('resizePreviewWrap');
+        if(resizePreview) {
+            resizePreview.innerHTML = '<div class="small">Image preview will appear here.</div>';
+            resizeImage = new Image();
+            resizedImageDataUrl = null; 
+            document.getElementById('resizeWidthNew').value = '';
+            document.getElementById('resizeHeightNew').value = '';
+            document.getElementById('btnResizeDownload').style.display = 'none'; 
+        }
+        // Clear main editor
+        const mainCanvas = document.getElementById('image-canvas');
+        if(mainCanvas) {
+            mainCanvas.getContext('2d').clearRect(0,0,mainCanvas.width, mainCanvas.height);
+            currentImage = new Image();
+            if(cropModeActive) toggleCropMode();
+        }
+    }
+    window.openSection = openSection; 
+
+    function goHome() {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('home').classList.add('active');
+        document.getElementById('backHomeBtn').style.display = 'none';
+        
+        if (cropModeActive) {
+            toggleCropMode(); 
+        }
+    }
+    window.goHome = goHome; 
+
+    // --- 2. Helper Functions (for PDF/ZIP/Image tools) ---
+    
+    function downloadBlob(blobOrDataUrl, filename) {
+        const a = document.createElement('a');
+        a.download = filename;
+        
+        if (typeof blobOrDataUrl === 'string') {
+            a.href = blobOrDataUrl;
+        } else {
+            const url = URL.createObjectURL(blobOrDataUrl);
+            a.href = url;
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+        
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+    
+    function setLastResultAndPreview(blob, containerId) {
+        lastResultBlob = blob;
+        if (lastResultURL) {
+            URL.revokeObjectURL(lastResultURL);
+        }
+        lastResultURL = URL.createObjectURL(blob);
+        const wrap = document.getElementById(containerId);
+        if (wrap) {
+            wrap.innerHTML = `<iframe src="${lastResultURL}"></iframe>`;
+        }
+    }
+    
+    function downloadLastResult() {
+        if (!lastResultBlob) {
+            return alert('No result available yet — run an action first.');
+        }
+        const filename = lastResultBlob.type === 'application/zip' ? 'result.zip' : 'result.pdf';
+        downloadBlob(lastResultBlob, filename);
+    }
+    window.downloadLastResult = downloadLastResult; 
+    
+    function readAsArrayBuffer(file){ 
+        return file.arrayBuffer(); 
+    }
+
+
+    // --- 3. Photo Editor: Get Elements ---
+    const imageLoader = document.getElementById('image-loader');
+    const canvas = document.getElementById('image-canvas');
+    const ctx = canvas.getContext('2d');
+    const rotateButton = document.getElementById('btn-rotate');
+    const flipHButton = document.getElementById('btn-flip-h');
+    const flipVButton = document.getElementById('btn-flip-v');
+    const saveButton = document.getElementById('btn-save');
+    const cropStartButton = document.getElementById('btn-crop-start');
+    const cropApplyButton = document.getElementById('btn-crop-apply');
+
+    // State variables for the photo editor
+    let currentImage = new Image(); 
+    let cropModeActive = false; 
+    let isCropping = false; 
+    let cropRect = { startX: 0, startY: 0, width: 0, height: 0 }; 
+
+    // --- 4. Photo Editor: File Loading ---
+    imageLoader.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            currentImage.onload = () => {
+                canvas.width = currentImage.width;
+                canvas.height = currentImage.height;
+                ctx.drawImage(currentImage, 0, 0);
+            };
+            currentImage.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // --- 5. Photo Editor: Helper Functions ---
+    
+    function redrawCanvas() {
+        if (!currentImage.src) return;
+        canvas.width = currentImage.width;
+        canvas.height = currentImage.height;
+        ctx.drawImage(currentImage, 0, 0);
+    }
+    
+    function updateImageFromCanvas() {
+        currentImage.src = canvas.toDataURL();
+        currentImage.width = canvas.width;
+        currentImage.height = canvas.height;
+    }
+
+    // --- 6. Photo Editor: Transform Functions ---
+    
+    rotateButton.addEventListener('click', () => {
+        if (!currentImage.src) return alert('Please upload an image first!');
+        
+        const newWidth = canvas.height;
+        const newHeight = canvas.width;
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.drawImage(currentImage, -currentImage.width / 2, -currentImage.height / 2);
+        ctx.restore();
+        
+        updateImageFromCanvas(); 
+    });
+
+    flipHButton.addEventListener('click', () => {
+        if (!currentImage.src) return alert('Please upload an image first!');
+        
+        redrawCanvas();
+        ctx.save();
+        ctx.translate(canvas.width, 0); 
+        ctx.scale(-1, 1); 
+        ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+        
+        updateImageFromCanvas(); 
+    });
+
+    flipVButton.addEventListener('click', () => {
+        if (!currentImage.src) return alert('Please upload an image first!');
+        
+        redrawCanvas();
+        ctx.save();
+        ctx.translate(0, canvas.height); 
+        ctx.scale(1, -1); 
+        ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+        
+        updateImageFromCanvas(); 
+    });
+    
+    // --- 7. Photo Editor: Crop Functions ---
+    
+    function getMousePos(canvasEl, evt) {
+        const rect = canvasEl.getBoundingClientRect();
+        const scaleX = canvasEl.width / rect.width;
+        const scaleY = canvasEl.height / rect.height;
+        return { 
+            x: (evt.clientX - rect.left) * scaleX, 
+            y: (evt.clientY - rect.top) * scaleY
+        };
+    }
+
+    function toggleCropMode() {
+        cropModeActive = !cropModeActive;
+        if (cropModeActive) {
+            cropStartButton.textContent = "Cancel Crop";
+            cropStartButton.classList.add('red');
+            canvas.style.cursor = 'crosshair';
+        } else {
+            cropStartButton.textContent = "Start Crop";
+            cropStartButton.classList.remove('red');
+            canvas.style.cursor = 'default';
+            isCropping = false;
+            cropRect = { startX: 0, startY: 0, width: 0, height: 0 };
+            redrawCanvas(); 
+        }
+    }
+    cropStartButton.addEventListener('click', toggleCropMode);
+
+    canvas.addEventListener('mousedown', (e) => {
+        if (!cropModeActive) return;
+        isCropping = true;
+        const pos = getMousePos(canvas, e);
+        cropRect.startX = pos.x;
+        cropRect.startY = pos.y;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (!cropModeActive || !isCropping) return;
+        
+        const pos = getMousePos(canvas, e);
+        cropRect.width = pos.x - cropRect.startX;
+        cropRect.height = pos.y - cropRect.startY;
+        
+        redrawCanvas();
+        
+        ctx.save();
+        ctx.strokeStyle = '#0d6efd'; 
+        ctx.lineWidth = 2;
+        ctx.strokeRect(cropRect.startX, cropRect.startY, cropRect.width, cropRect.height);
+        ctx.restore();
+    });
+
+    canvas.addEventListener('mouseup', (e) => {
+        if (!cropModeActive) return;
+        isCropping = false;
+    });
+
+    cropApplyButton.addEventListener('click', () => {
+        if (!cropModeActive || !cropRect.width || !cropRect.height) {
+            return alert('Please "Start Crop" and draw a box on the image first.');
+        }
+        
+        const x = cropRect.width < 0 ? cropRect.startX + cropRect.width : cropRect.startX;
+        const y = cropRect.height < 0 ? cropRect.startY + cropRect.height : cropRect.startY;
+        const w = Math.abs(cropRect.width);
+        const h = Math.abs(cropRect.height);
+
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = w;
+        tempCanvas.height = h;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        tempCtx.drawImage(currentImage, x, y, w, h, 0, 0, w, h);
+        
+        currentImage.src = tempCanvas.toDataURL();
+        currentImage.width = w;
+        currentImage.height = h;
+        redrawCanvas();
+        
+        toggleCropMode(); // Exit crop mode
+    });
+
+    // --- 8. Photo Editor: Save Function ---
+    saveButton.addEventListener('click', () => {
+        if (!currentImage.src) {
+            alert('Please upload an image first!');
+            return;
+        }
+        downloadBlob(canvas.toDataURL('image/png'), 'edited-image.png');
+    });
+
+    // --- 9. Standalone Resize Tool Logic ---
+    const resizeFile = document.getElementById('resizeFile');
+    const resizeWidthNew = document.getElementById('resizeWidthNew');
+    const resizeHeightNew = document.getElementById('resizeHeightNew');
+    const btnResizePreview = document.getElementById('btnResizePreview');
+    const btnResizeDownload = document.getElementById('btnResizeDownload');
+    const resizePreviewWrap = document.getElementById('resizePreviewWrap');
+    let resizeImage = new Image();
+    let resizedImageDataUrl = null; 
+
+    resizeFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            resizeImage.onload = () => {
+                resizeWidthNew.value = resizeImage.width;
+                resizeHeightNew.value = resizeImage.height;
+                resizePreviewWrap.innerHTML = ''; 
+                const imgPreview = document.createElement('img');
+                imgPreview.src = resizeImage.src;
+                resizePreviewWrap.appendChild(imgPreview);
+                btnResizeDownload.style.display = 'none';
+                resizedImageDataUrl = null;
+            };
+            resizeImage.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    btnResizePreview.addEventListener('click', () => {
+        if (!resizeImage.src) return alert('Please upload an image first.');
+        
+        const newWidth = parseInt(resizeWidthNew.value, 10);
+        const newHeight = parseInt(resizeHeightNew.value, 10);
+        
+        if (!newWidth || !newHeight || newWidth <= 0 || newHeight <= 0) {
+            return alert('Please enter valid width and height dimensions.');
+        }
+        
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = newWidth;
+        tempCanvas.height = newHeight;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        tempCtx.drawImage(resizeImage, 0, 0, newWidth, newHeight);
+        
+        resizedImageDataUrl = tempCanvas.toDataURL('image/png');
+        
+        const imgPreview = resizePreviewWrap.querySelector('img');
+        if (imgPreview) {
+            imgPreview.src = resizedImageDataUrl;
+        }
+        
+        btnResizeDownload.style.display = 'inline-block';
+    });
+    
+    btnResizeDownload.addEventListener('click', () => {
+        if (!resizedImageDataUrl) {
+            return alert('Please preview your resized image first.');
+        }
+        downloadBlob(resizedImageDataUrl, 'resized-image.png');
+    });
+
+
+    // --- 10. ADVANCED WATERMARK TOOL ---
+    const wmFile = document.getElementById('wmFile');
+    const wmTextInput = document.getElementById('wm-text-input');
+    const wmTextColor = document.getElementById('wm-text-color');
+    const wmTextSize = document.getElementById('wm-text-size');
+    const wmFontFamily = document.getElementById('wm-font-family'); // NEW
+    const wmFontStyle = document.getElementById('wm-font-style'); // NEW
+    const wmTextOpacity = document.getElementById('wm-text-opacity');
+    const wmRotate = document.getElementById('wm-rotate');
+    const btnWatermarkDownload = document.getElementById('btnWatermarkDownload');
+    const wmCanvas = document.getElementById('wmCanvas');
+    const wmCtx = wmCanvas.getContext('2d');
+    
+    let wmImage = new Image();
+    // Text object to store all properties, including position
+    let wmText = {
+        text: "WATERMARK",
+        color: "#FFFFFF",
+        size: 50,
+        opacity: 0.5,
+        rotation: -45,
+        x: 0, // Will be set on image load
+        y: 0, // Will be set on image load
+        font: "Inter", // NEW
+        style: "normal" // NEW
+    };
+    let isDraggingText = false;
+    let dragOffset = { x: 0, y: 0 };
+    
+    // Get mouse position relative to canvas
+    function getWmMousePos(evt) {
+        const rect = wmCanvas.getBoundingClientRect();
+        const scaleX = wmCanvas.width / rect.width;
+        const scaleY = wmCanvas.height / rect.height;
+        return { 
+            x: (evt.clientX - rect.left) * scaleX, 
+            y: (evt.clientY - rect.top) * scaleY
+        };
+    }
+
+    // Function to draw the image and watermark
+    function drawWatermark() {
+        if (!wmImage.src) return;
+        
+        // Clear and draw image
+        wmCtx.clearRect(0, 0, wmCanvas.width, wmCanvas.height);
+        wmCtx.drawImage(wmImage, 0, 0);
+
+        // Get values from inputs
+        wmText.text = wmTextInput.value || "WATERMARK";
+        wmText.color = wmTextColor.value;
+        wmText.size = parseInt(wmTextSize.value, 10) || 50;
+        wmText.opacity = parseFloat(wmTextOpacity.value);
+        wmText.rotation = parseInt(wmRotate.value, 10);
+        wmText.font = wmFontFamily.value; // NEW
+        wmText.style = wmFontStyle.value; // NEW
+
+        // Save canvas state
+        wmCtx.save();
+        
+        // Apply text settings
+        wmCtx.globalAlpha = wmText.opacity; 
+        wmCtx.fillStyle = wmText.color;
+        // NEW: Construct font string
+        wmCtx.font = `${wmText.style} ${wmText.size}px ${wmText.font}`; 
+        wmCtx.textAlign = 'center';
+        wmCtx.textBaseline = 'middle';
+        
+        // Translate and rotate around the text's position
+        wmCtx.translate(wmText.x, wmText.y);
+        wmCtx.rotate(wmText.rotation * Math.PI / 180); // Convert degrees to radians
+        
+        // Draw text at the new (0,0) origin
+        wmCtx.fillText(wmText.text, 0, 0);
+        
+        // Restore canvas state
+        wmCtx.restore();
+    }
+    
+    // Get text bounding box (simplified for hit detection)
+    function getTextBounds() {
+        // Apply font settings to measure text accurately
+        wmCtx.font = `${wmText.style} ${wmText.size}px ${wmText.font}`; 
+        const metrics = wmCtx.measureText(wmText.text);
+        const width = metrics.width;
+        const height = wmText.size; // Good approximation
+        return {
+            x: wmText.x - width / 2,
+            y: wmText.y - height / 2,
+            width: width,
+            height: height
+        };
+    }
+    
+    // Check if mouse is inside the text bounds (simplified, non-rotated)
+    function isMouseInText(pos, bounds) {
+        return pos.x > bounds.x && pos.x < bounds.x + bounds.width &&
+               pos.y > bounds.y && pos.y < bounds.y + bounds.height;
+    }
+
+    // Load image
+    wmFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            wmImage.onload = () => {
+                wmCanvas.width = wmImage.width;
+                wmCanvas.height = wmImage.height;
+                // Set default text position to center
+                wmText.x = wmCanvas.width / 2;
+                wmText.y = wmCanvas.height / 2;
+                drawWatermark();
+            };
+            wmImage.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Add listeners to all inputs to redraw live
+    [wmTextInput, wmTextColor, wmTextSize, wmTextOpacity, wmRotate, wmFontFamily, wmFontStyle].forEach(el => {
+        el.addEventListener('input', drawWatermark);
+    });
+
+    // Mouse listeners for dragging
+    wmCanvas.addEventListener('mousedown', (e) => {
+        if (!wmImage.src) return;
+        const pos = getWmMousePos(e);
+        const bounds = getTextBounds();
+        
+        // Check for hit
+        if (isMouseInText(pos, bounds)) {
+            isDraggingText = true;
+            dragOffset.x = pos.x - wmText.x;
+            dragOffset.y = pos.y - wmText.y;
+            wmCanvas.style.cursor = 'grabbing';
+        }
+    });
+
+    wmCanvas.addEventListener('mousemove', (e) => {
+        if (!wmImage.src) return;
+        const pos = getWmMousePos(e);
+        
+        if (isDraggingText) {
+            wmText.x = pos.x - dragOffset.x;
+            wmText.y = pos.y - dragOffset.y;
+            drawWatermark();
+        } else {
+            // Show 'move' cursor on hover
+            const bounds = getTextBounds();
+            if (isMouseInText(pos, bounds)) {
+                wmCanvas.style.cursor = 'move';
+            } else {
+                wmCanvas.style.cursor = 'default';
+            }
+        }
+    });
+
+    wmCanvas.addEventListener('mouseup', (e) => {
+        isDraggingText = false;
+        wmCanvas.style.cursor = 'default';
+    });
+    
+    wmCanvas.addEventListener('mouseout', (e) => {
+        isDraggingText = false;
+        wmCanvas.style.cursor = 'default';
+    });
+
+    // Download button
+    btnWatermarkDownload.addEventListener('click', () => {
+        if (!wmImage.src) return alert('Please upload an image first.');
+        
+        // Apply the logic one last time
+        drawWatermark();
+        
+        // Download the result directly
+        downloadBlob(wmCanvas.toDataURL('image/png'), 'watermarked-image.png');
+    });
+
+
+    // --- 11. Image → PDF Function ---
+    async function imagesToPdf(){
+        const input = document.getElementById('imgFiles');
+        if(!input.files.length) return alert('Select one or more images.');
+        
+        try{
+            const pdfDoc = await PDFLib.PDFDocument.create();
+            
+            for(const f of input.files){
+                const arr = await readAsArrayBuffer(f);
+                let embed;
+                
+                if(f.type.includes('png')) {
+                    embed = await pdfDoc.embedPng(arr);
+                } else {
+                    embed = await pdfDoc.embedJpg(arr);
+                }
+                
+                const {width, height} = embed.scale(1);
+                const page = pdfDoc.addPage([width, height]);
+                page.drawImage(embed, {x:0, y:0, width, height});
+            }
+            
+            const bytes = await pdfDoc.save();
+            const blob = new Blob([bytes], {type:'application/pdf'});
+            
+            setLastResultAndPreview(blob, 'imgViewerWrap');
+            alert('Image(s) converted. Click Download Result to save.');
+            
+        } catch(e) {
+            console.error(e); 
+            alert('Error converting images: '+e.message);
+        }
+    }
+    window.imagesToPdf = imagesToPdf; 
+
+    // --- 12. PDF → Image Function ---
+    
+    async function renderPdfToImages(bytes, containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '<div class="small">Loading PDF and rendering pages...</div>';
+        
+        if (!pdfjsLib) {
+            container.innerHTML = '<div class="small" style="color:red;">Error: PDF.js library failed to load.</div>';
+            return null;
+        }
+        
+        const loadingTask = pdfjsLib.getDocument({data: bytes});
+        const pdf = await loadingTask.promise;
+        const total = pdf.numPages;
+        container.innerHTML = ''; 
+        
+        const imagePromises = [];
+
+        for(let i=1; i<=total; i++) {
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({scale: 1.5}); 
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = Math.floor(viewport.width);
+            canvas.height = Math.floor(viewport.height);
+            
+            await page.render({canvasContext: ctx, viewport}).promise;
+            
+            const thumb = document.createElement('div');
+            thumb.className='thumb';
+            thumb.appendChild(canvas);
+            container.appendChild(thumb);
+            
+            const promise = new Promise((resolve) => {
+                canvas.toBlob(blob => resolve({ blob, name: `page-${i}.png` }), 'image/png');
+            });
+            imagePromises.push(promise);
+        }
+        
+        return Promise.all(imagePromises); 
+    }
+
+    async function pdfToImages() {
+        const input = document.getElementById('pdfFile');
+        if (!input.files.length) return alert('Select a PDF file first.');
+        
+        const downloadWrapper = document.getElementById('pdfDownloadWrapper');
+        downloadWrapper.innerHTML = ''; 
+        
+        try {
+            const file = input.files[0];
+            const bytes = await readAsArrayBuffer(file);
+            
+            const images = await renderPdfToImages(bytes, 'pdfThumbContainer');
+            
+            if (!images || images.length === 0) {
+                return alert('Could not extract images from PDF.');
+            }
+
+            const zip = new JSZip();
+            for (const image of images) {
+                zip.file(image.name, image.blob);
+            }
+            
+            const content = await zip.generateAsync({type:'blob'});
+            
+            lastResultBlob = content;
+            
+            alert('PDF converted to images! Thumbnails are shown below. Click "Download Result (ZIP)" to save.');
+            
+            downloadWrapper.innerHTML = `<button class="btn" onclick="downloadLastResult()">Download Result (ZIP)</button>`;
+
+        } catch(e) {
+            console.error(e);
+            alert('Error converting PDF to images: ' + e.message);
+            document.getElementById('pdfThumbContainer').innerHTML = `<div class="small" style="color:red;">Error: ${e.message}</div>`;
+        }
+    }
+    window.pdfToImages = pdfToImages; 
+
+</script>
+
+</body>
+</html>
